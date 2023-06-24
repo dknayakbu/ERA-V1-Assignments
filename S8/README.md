@@ -4,7 +4,57 @@ This repository contains all the ERA V1 session 8 Assignments.
 In this assignment for session 8, we are building a model to classify the MNIST dataset.
 
 # Code Structure
-##
+## Aim of Assignment
+Aim of this assignment is to apply 3 different normalisation techniques avaialable able and note their effect on the model performance.
+
+The 3 different normalisation techniques are:
+  - Batch Normalisation
+  - Group Normalisation
+  - Layer Normalisation
+
+## The Model Architecture
+The model architecture for this experiment will remain same throughout with only change happening in the normalisation part.
+
+We add Convolution in the form of blocks. Each block will consist of the below:
+  - Convoltion
+  - Normalisation
+  - Activation function (ReLU)
+
+The model consists of below block layers:
+  - Convolution block 1
+    - Parameters: in_channels=3, out_channels=16, kernel_size=(3, 3), padding=0
+  - Convolution block 2
+    - Parameters: in_channels=16, out_channels=16, kernel_size=(3, 3), padding=0
+  - Convolution block 3 with Skip connection
+    - Parameters: in_channels=16, out_channels=16, kernel_size=(1, 1), padding=0
+    - Here we apply skip connection to the convoltion layer
+    - It is done by using "x = x + Conv3"
+    - To apply skip coonection, we need to keep the in and out channel size same
+    - Also the kernel size should be (1, 1)
+  - Pooling 1
+  - Convolution block 4
+    - Parameters: in_channels=16, out_channels=32, kernel_size=(3, 3), padding=0
+  - Convolution block 5
+    - Parameters: in_channels=32, out_channels=32, kernel_size=(3, 3), padding=0
+  - Convolution block 6 with Skip Connection
+    - Parameters: in_channels=32, out_channels=32, kernel_size=(1, 1), padding=0
+    - Skip connection is added by using "x = x + Conv3"
+    - To apply skip coonection, we need to keep the in and out channel size same
+    - Also the kernel size should be (1, 1)
+  - Pooling 2
+  - Convolution block 7
+    - Parameters: in_channels=32, out_channels=32, kernel_size=(3, 3), padding=0
+  - Convolution block 8
+    - Parameters: in_channels=32, out_channels=32, kernel_size=(3, 3), padding=0
+  - Convolution block 9
+    - Parameters: in_channels=32, out_channels=10, kernel_size=(3, 3), padding=0
+  - Global Average Pooling
+  - Convolution block 10 with Skip Connection
+    - Parameters: in_channels=10, out_channels=10, kernel_size=(1, 1), padding=0
+    - Skip connection is added by using "x = x + Conv3"
+    - To apply skip coonection, we need to keep the in and out channel size same
+    - Also the kernel size should be (1, 1)
+
 
 
 # Train and Test Accuracy Comparision
