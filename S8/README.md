@@ -17,7 +17,7 @@ The model architecture for this experiment will remain same throughout with only
 
 We add Convolution in the form of blocks. Each block will consist of the below:
   - Convoltion
-  - Normalisation
+  - Normalisation (To be experimented with)
   - Activation function (ReLU)
 
 The model consists of below block layers:
@@ -55,7 +55,33 @@ The model consists of below block layers:
     - To apply skip coonection, we need to keep the in and out channel size same
     - Also the kernel size should be (1, 1)
 
-
+# About Normalisation
+## What is Normalisation and what is it used for?
+Normalization is a techniques used in deep learning models to standardize the activations of neural network layers. The goal of normalization is to transform features to be on a similar scale.
+## Why to use normalisation?
+Normalisation is used to improve performance and training statbility of the model. It helps in addressing the internal covariate shift problem, which refers to the change in the distribution of network activations as the model parameters are updated during training.
+## Different Normalisations available
+The different normalisation techniques available for CNN models are:
+  - Batch Normalisation
+  - Group Normalisation
+  - Layer Normalisation
+### Batch Normalisation
+  - Batch Normalization operates on a mini-batch of samples. It normalizes the activations within a batch along the batch dimension.
+  - The mean and standard deviation are calculated for each feature/channel independently across the batch.
+  - It introduces additional learnable parameters (scale and shift) to allow the model to learn the optimal scaling and shifting of the normalized activations.
+  - Batch Normalization helps address the internal covariate shift problem, reduces the sensitivity to initialization, and can accelerate training by providing more stable gradients.
+  - It is commonly used in convolutional neural networks (CNNs) and fully connected layers.
+### Group Normalisation
+  - Group Normalization divides the channels into groups and computes normalization statistics within each group.
+  - Instead of using the batch dimension, it operates along the channel dimension.
+  - The mean and standard deviation are calculated independently for each group and each sample in the mini-batch.
+  - GN is useful when the batch size is small or when the activations of different channels within a layer have different statistics.
+  - It is beneficial in scenarios where the batch dimension may not capture sufficient statistics for normalization, such as in transfer learning or when training with small batch sizes.
+### Layer Normalisation
+  - Layer Normalization normalizes the activations within each sample along the feature dimension (layer-wise).
+  - It computes the mean and standard deviation for each sample independently, using all the features within that sample.
+  - LN is commonly applied to recurrent neural networks (RNNs) and transformer models where the activations vary over time steps or positions but remain constant across the batch dimension.
+  - Layer Normalization helps with reducing the impact of the variance of activations across different samples.
 
 # Train and Test Accuracy Comparision
 In our experiment we only change the norlisation technique while keeping all the other parameters constant to see the effects.
