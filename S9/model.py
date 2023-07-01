@@ -38,29 +38,30 @@ class Block(nn.Module):
         """
         super(Block, self).__init__()
         self.usepool = usepool
-        self.conv1 = nn.Conv2d(input_size, output_size/3, 3, padding=padding)
+        temp_output_size =int(output_size/4)
+        self.conv1 = nn.Conv2d(input_size, temp_output_size, 3, padding=padding)
         if norm == 'bn':
-            self.n1 = nn.BatchNorm2d(output_size/3)
+            self.n1 = nn.BatchNorm2d(temp_output_size)
         elif norm == 'gn':
-            self.n1 = nn.GroupNorm(GROUP_SIZE, output_size/3)
+            self.n1 = nn.GroupNorm(GROUP_SIZE, temp_output_size)
         elif norm == 'ln':
-            self.n1 = nn.GroupNorm(1, output_size/3)
+            self.n1 = nn.GroupNorm(1, temp_output_size)
 
         if dilation:
-            self.conv2 = nn.Conv2d(output_size/3, (output_size/3)*2, 3, padding=padding, dilation=2)
+            self.conv2 = nn.Conv2d(temp_output_size, (temp_output_size)*2, 3, padding=padding, dilation=2)
         elif depthwise_separable_conv:
-            self.conv2 = DepthwiseSeparableConv(output_size/3, (output_size/3)*2)
+            self.conv2 = DepthwiseSeparableConv(temp_output_size, (temp_output_size)*2)
         else:
-            self.conv2 = nn.Conv2d(output_size/3, (output_size/3)*2, 3, padding=padding)
+            self.conv2 = nn.Conv2d(temp_output_size, (temp_output_size)*2, 3, padding=padding)
 
         if norm == 'bn':
-            self.n2 = nn.BatchNorm2d((output_size/3)*2)
+            self.n2 = nn.BatchNorm2d((temp_output_size)*2)
         elif norm == 'gn':
-            self.n2 = nn.GroupNorm(GROUP_SIZE, (output_size/3)*2)
+            self.n2 = nn.GroupNorm(GROUP_SIZE, (temp_output_size)*2)
         elif norm == 'ln':
-            self.n2 = nn.GroupNorm(1, (output_size/3)*2)
+            self.n2 = nn.GroupNorm(1, (temp_output_size)*2)
         # The third Conv layer of each block should have stride of 2.
-        self.conv3 = nn.Conv2d((output_size/3)*2, output_size, 3, padding=padding, stride=stride)
+        self.conv3 = nn.Conv2d((temp_output_size)*2, output_size, 3, padding=padding, stride=stride)
         if norm == 'bn':
             self.n3 = nn.BatchNorm2d(output_size)
         elif norm == 'gn':
@@ -101,7 +102,7 @@ class Net(nn.Module):
         nn (nn.Module): Instance of pytorch Module
     """
 
-    def __init__(self, base_channels=30, drop=0.01, norm='bn'):
+    def __init__(self, base_channels=32, drop=0.01, norm='bn'):
         """Initialize Network
 
         Args:
@@ -118,16 +119,16 @@ class Net(nn.Module):
         self.block1 = Block(3, self.base_channels, norm=norm, usepool=False)
         self.dropout1 = nn.Dropout(self.drop)
         self.block2 = Block(self.base_channels,
-                            self.base_channels*2, norm=norm, usepool=False,
+                            self.base_channels, norm=norm, usepool=False,
                             dilation=True)
         self.dropout2 = nn.Dropout(self.drop)
-        self.block3 = Block(self.base_channels*2,
-                            self.base_channels*3, norm=norm, usepool=False,
+        self.block3 = Block(self.base_channels,
+                            self.base_channels, norm=norm, usepool=False,
                             depthwise_separable_conv=True)
         self.dropout3 = nn.Dropout(self.drop)
 
         self.gap = nn.AdaptiveAvgPool2d(1)
-        self.flat = nn.Conv2d(self.base_channels*3, 10, 1)
+        self.flat = nn.Conv2d(self.base_channels, 10, 1)
 
     def forward(self, x, dropout=True):
         """Convolution function
@@ -155,4 +156,3 @@ class Net(nn.Module):
 
         # Output Layer
         return F.log_softmax(x, dim=1)
-
