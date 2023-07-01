@@ -15,5 +15,34 @@ Aim of this assignment is to
     - shiftScaleRotate
     - coarseDropout (max_holes = 1, max_height=16px, max_width=16, min_holes = 1, min_height=16px, min_width=16px, fill_value=(mean of your dataset), mask_fill_value = None)
 
+## Model Architecture
+We divide the model using blocks.
+### Block Structure
+Each block consists of 3 Conv layers with options for Dilation or Depthwise Separable Conv in the middle Conv layer. In each conv layer the optput size becomes ouble of input size.
+  - Conv1 layer
+  - Batch Normalization
+  - ReLU
+  - Conv2 layer (with options for Dilation or Depthwise Separable Conv)
+  - Batch Normalization
+  -  ReLU
+  - Conv3 layer (with Stride=2)
+  - ReLU
+
+Finally, combining the blocks in the following fashion:
+  - Block1
+  - Dropout
+  - Block2
+  - Dropout
+  - Block3
+  - Dropout
+  - GAP
+  - Fully connected layer
+
+## Training and Testing Loss
+![image](https://github.com/dknayakbu/ERA-V1-Assignments/assets/20933037/df4a0878-54ce-49ed-9997-4ffc180a5774)
+
+## Sample of Misclassified Images
+![image](https://github.com/dknayakbu/ERA-V1-Assignments/assets/20933037/dd176ca2-5623-49ea-9da4-0e01adf6e373)
+
 
 
