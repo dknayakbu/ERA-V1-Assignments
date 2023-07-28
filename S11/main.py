@@ -102,7 +102,7 @@ print_samples(train_loader, class_map)
 ##############################################################################
 # Model summary details
 model = ResNet18().to(device)
-print(summary(model, input_size=(3, 32, 32)))
+# print(summary(model, input_size=(3, 32, 32)))
 ##############################################################################
 # Define the loss function, optimizer and scheduler
 criterion = nn.CrossEntropyLoss()
@@ -177,17 +177,17 @@ def test(model, device, test_loader):
     return test_losses, test_acc
 
 ##############################################################################
-train_losses = []
-test_losses = []
-train_acc = []
-test_acc = []
+# train_losses = []
+# test_losses = []
+# train_acc = []
+# test_acc = []
 
-for epoch in range(EPOCHS):
-    print("EPOCH:", epoch)
-    train_losses_epoch, train_acc_epoch = train(model, device, train_loader, optimizer, epoch)
-    train_losses.append(train_losses_epoch)
-    train_acc.append(train_acc_epoch)
-    scheduler.step()
-    test_losses_epoch, test_acc_epoch = test(model, device, test_loader)
-    test_losses.append(test_losses_epoch)
-    test_acc.append(test_acc_epoch)
+# for epoch in range(EPOCHS):
+#     print("EPOCH:", epoch)
+#     train_losses_epoch, train_acc_epoch = train(model, device, train_loader, optimizer, epoch)
+#     train_losses.append(train_losses_epoch)
+#     train_acc.append(train_acc_epoch)
+#     scheduler.step()
+#     test_losses_epoch, test_acc_epoch = test(model, device, test_loader)
+#     test_losses.append(test_losses_epoch)
+#     test_acc.append(test_acc_epoch)
