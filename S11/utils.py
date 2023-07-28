@@ -44,23 +44,23 @@ def print_samples(loader, class_map, count=16):
         break
 
 
-def progress_bar(EPOCHS, model, device, train_loader, test_loader, optimizer, scheduler):
-    train_losses = []
-    test_losses = []
-    train_acc = []
-    test_acc = []
+# def progress_bar(EPOCHS, model, device, train_loader, test_loader, optimizer, scheduler):
+#     train_losses = []
+#     test_losses = []
+#     train_acc = []
+#     test_acc = []
 
-    for epoch in range(EPOCHS):
-        print("EPOCH:", epoch)
-        train_losses_epoch, train_acc_epoch = train(model, device, train_loader, optimizer, epoch)
-        train_losses.append(train_losses_epoch)
-        train_acc.append(train_acc_epoch)
-        scheduler.step()
-        test_losses_epoch, test_acc_epoch = test(model, device, test_loader)
-        test_losses.append(test_losses_epoch)
-        test_acc.append(test_acc_epoch)
+#     for epoch in range(EPOCHS):
+#         print("EPOCH:", epoch)
+#         train_losses_epoch, train_acc_epoch = train(model, device, train_loader, optimizer, epoch)
+#         train_losses.append(train_losses_epoch)
+#         train_acc.append(train_acc_epoch)
+#         scheduler.step()
+#         test_losses_epoch, test_acc_epoch = test(model, device, test_loader)
+#         test_losses.append(test_losses_epoch)
+#         test_acc.append(test_acc_epoch)
 
-    return train_losses, test_losses, train_acc, test_acc
+#     return train_losses, test_losses, train_acc, test_acc
 
 
 def get_incorrrect_predictions(model, loader, device):

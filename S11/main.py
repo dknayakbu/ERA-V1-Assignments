@@ -5,6 +5,7 @@ import numpy as np
 import albumentations as A
 import torch
 from torch.utils.data import Dataset
+from torchsummary import summary
 
 from models.model import *
 from utils import *
@@ -12,10 +13,15 @@ from utils import *
 LEARNING_RATE = 0.01
 WEIGHT_DECAY = 1e-4
 SCH_MAX_LR = 1e-2
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+SEED = 1
 EPOCHS = 20
-model = ResNet18().to(device)
+##############################################################################
+# CUDA?
+cuda = torch.cuda.is_available()
+print("CUDA Available?", cuda)
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+##############################################################################
 class CustomDataset(Dataset):
     """
     Custom Dataset Class
@@ -53,7 +59,7 @@ class CustomDataset(Dataset):
 
         return (image, label)
 
-
+##############################################################################
 # Dataset and Creating Train/Test Split
 train_set = CustomDataset(
             datasets.CIFAR10("./data", train=True, download=True),
@@ -63,12 +69,7 @@ test_set = CustomDataset(
             datasets.CIFAR10("./data", train=False, download=True),
             transforms=test_transforms,
         )
-
-SEED = 1
-# CUDA?
-cuda = torch.cuda.is_available()
-print("CUDA Available?", cuda)
-
+##############################################################################
 # For reproducibility
 torch.manual_seed(SEED)
 
@@ -84,6 +85,11 @@ train_loader = torch.utils.data.DataLoader(train_set, **dataloader_args)
 # test dataloader
 test_loader = torch.utils.data.DataLoader(test_set, **dataloader_args)
 
+##############################################################################
+# Model summary details
+model = ResNet18().to(device)
+print(summary(model, input_size=(3, 32, 32)))
+##############################################################################
 # Define the loss function, optimizer and scheduler
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
@@ -91,7 +97,7 @@ scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr = SCH_MAX_LR,
                                                     steps_per_epoch = len(train_loader), epochs = 30, 
                                                     pct_start = 5/30, div_factor = 100, three_phase = False,
                                                     final_div_factor = 100, anneal_strategy = 'linear')
-
+##############################################################################
 def train(model, device, train_loader, optimizer, epoch):
   train_losses = []
   train_acc = []
@@ -156,9 +162,18 @@ def test(model, device, test_loader):
 
     return test_losses, test_acc
 
-EPOCHS = 30
+##############################################################################
+train_losses = []
+test_losses = []
+train_acc = []
+test_acc = []
+
 for epoch in range(EPOCHS):
     print("EPOCH:", epoch)
-    train(model, device, train_loader, optimizer, epoch)
+    train_losses_epoch, train_acc_epoch = train(model, device, train_loader, optimizer, epoch)
+    train_losses.append(train_losses_epoch)
+    train_acc.append(train_acc_epoch)
     scheduler.step()
-    test(model, device, test_loader)
+    test_losses_epoch, test_acc_epoch = test(model, device, test_loader)
+    test_losses.append(test_losses_epoch)
+    test_acc.append(test_acc_epoch)
