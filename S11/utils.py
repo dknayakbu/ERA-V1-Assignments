@@ -11,8 +11,8 @@ train_transforms = A.Compose([
     A.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)), # The mean and std have to be sequences (e.g., tuples), therefore you should add a comma after the values.
     A.PadIfNeeded(min_height=40,min_width=40),
     A.RandomCrop(32, 32, p=1.0),
-    A.HorizontalFlip(),
-    A.Cutout(num_holes=1, max_h_size=8, max_w_size=8, fill_value=[0.4914, 0.4822, 0.4465], always_apply=False, p=0.1),
+    # A.HorizontalFlip(),
+    A.Cutout(num_holes=1, max_h_size=16, max_w_size=16, fill_value=[0.4914, 0.4822, 0.4465], always_apply=False, p=0.1),
     ToTensorV2(),
 ])
 
