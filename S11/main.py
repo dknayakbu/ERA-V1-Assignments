@@ -1,4 +1,3 @@
-from __future__ import print_function
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets
@@ -6,21 +5,13 @@ import numpy as np
 import albumentations as A
 import torch
 from torch.utils.data import Dataset
-import argparse
 
 from models.model import *
 from utils import *
 
-parser = argparse.ArgumentParser(description = 'PyTorch CIFAR10 Training')
-parser.add_argument('--lr', default = 0.01, type = float, help = 'learning rate')
-parser.add_argument('--wd', default = 1e-4, type = float, help = 'weight decay')
-parser.add_argument('--sch_max_lr', default = 1e-4, type = float, help = 'scheduler max learning rate')
-parser.add_argument('--train_loader', default = 1e-4, type = float, help = 'train_loader')
-parser.add_argument('--model', help = 'model')
-parser.add_argument('--resume', '-r', action = 'store_true',
-                    help = 'resume from checkpoint')
-args = parser.parse_args()
-
+LEARNING_RATE = 0.01
+WEIGHT_DECAY = 1e-4
+SCH_MAX_LR = 1e-2
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 EPOCHS = 20
 model = ResNet18().to(device)
@@ -95,8 +86,8 @@ test_loader = torch.utils.data.DataLoader(test_set, **dataloader_args)
 
 # Define the loss function, optimizer and scheduler
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr = args.lr, weight_decay = args.wd)
-lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr = args.sch_max_lr, 
-                                                    steps_per_epoch = len(args.train_loader), epochs = 30, 
+optimizer = optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr = SCH_MAX_LR, 
+                                                    steps_per_epoch = len(train_loader), epochs = 30, 
                                                     pct_start = 5/30, div_factor = 100, three_phase = False,
                                                     final_div_factor = 100, anneal_strategy = 'linear')
