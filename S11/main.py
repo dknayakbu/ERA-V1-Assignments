@@ -98,7 +98,7 @@ train_loader = torch.utils.data.DataLoader(train_set, **dataloader_args)
 # test dataloader
 test_loader = torch.utils.data.DataLoader(test_set, **dataloader_args)
 
-print_samples(train_loader, class_map)
+# print_samples(train_loader, class_map)
 ##############################################################################
 # Model summary details
 model = ResNet18().to(device)
@@ -107,10 +107,10 @@ model = ResNet18().to(device)
 # Define the loss function, optimizer and scheduler
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
-scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr = SCH_MAX_LR, 
-                                                    steps_per_epoch = len(train_loader), epochs = 30, 
-                                                    pct_start = 5/30, div_factor = 100, three_phase = False,
-                                                    final_div_factor = 100, anneal_strategy = 'linear')
+# scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr = SCH_MAX_LR, 
+#                                                     steps_per_epoch = len(train_loader), epochs = EPOCHS, 
+#                                                     pct_start = 5/EPOCHS, div_factor = 100, three_phase = False,
+#                                                     final_div_factor = 100, anneal_strategy = 'linear')
 ##############################################################################
 def train(model, device, train_loader, optimizer, epoch):
   train_losses = []
