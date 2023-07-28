@@ -69,6 +69,19 @@ test_set = CustomDataset(
             datasets.CIFAR10("./data", train=False, download=True),
             transforms=test_transforms,
         )
+
+class_map = {
+    "PLANE": 0,
+    "CAR": 1,
+    "BIRD": 2,
+    "CAT": 3,
+    "DEER": 4,
+    "DOG": 5,
+    "FROG": 6,
+    "HORSE": 7,
+    "SHIP": 8,
+    "TRUCK": 9,
+}
 ##############################################################################
 # For reproducibility
 torch.manual_seed(SEED)
@@ -85,6 +98,7 @@ train_loader = torch.utils.data.DataLoader(train_set, **dataloader_args)
 # test dataloader
 test_loader = torch.utils.data.DataLoader(test_set, **dataloader_args)
 
+print_samples(train_loader, class_map)
 ##############################################################################
 # Model summary details
 model = ResNet18().to(device)
