@@ -10,7 +10,7 @@ from torchsummary import summary
 from models.model import *
 from utils import *
 
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 WEIGHT_DECAY = 1e-4
 SCH_MAX_LR = 1e-2
 SEED = 1
