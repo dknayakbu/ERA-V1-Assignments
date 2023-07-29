@@ -113,40 +113,47 @@ optimizer = optim.Adam(model.parameters(), lr = LEARNING_RATE, weight_decay = WE
 #                                                     final_div_factor = 100, anneal_strategy = 'linear')
 ##############################################################################
 def train(model, device, train_loader, optimizer, epoch):
-	model.train()
-	pbar = tqdm(train_loader)
-	correct = 0
-	processed = 0
-	for batch_idx, (data, target) in enumerate(pbar):
-		# get samples
-		data, target = data.to(device), target.to(device)
+    train_losses = []
+    train_acc = []
 
-		# Init
-		optimizer.zero_grad()
-		# In PyTorch, we need to set the gradients to zero before starting to do backpropragation because PyTorch accumulates the gradients on subsequent backward passes.
-		# Because of this, when you start your training loop, ideally you should zero out the gradients so that you do the parameter update correctly.
+    model.train()
+    pbar = tqdm(train_loader)
+    correct = 0
+    processed = 0
+    for batch_idx, (data, target) in enumerate(pbar):
+        # get samples
+        data, target = data.to(device), target.to(device)
 
-		# Predict
-		y_pred = model(data)
+        # Init
+        optimizer.zero_grad()
+        # In PyTorch, we need to set the gradients to zero before starting to do backpropragation because PyTorch accumulates the gradients on subsequent backward passes.
+        # Because of this, when you start your training loop, ideally you should zero out the gradients so that you do the parameter update correctly.
 
-		# Calculate loss
-		loss = F.nll_loss(y_pred, target)
-		train_losses.append(loss)
+        # Predict
+        y_pred = model(data)
 
-		# Backpropagation
-		loss.backward()
-		optimizer.step()
+        # Calculate loss
+        loss = F.nll_loss(y_pred, target)
+        train_losses.append(loss)
 
-		# Update pbar-tqdm
+        # Backpropagation
+        loss.backward()
+        optimizer.step()
 
-		pred = y_pred.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-		correct += pred.eq(target.view_as(pred)).sum().item()
-		processed += len(data)
+        # Update pbar-tqdm
 
-		pbar.set_description(desc= f'Loss={loss.item()} Batch_id={batch_idx} Accuracy={100*correct/processed:0.2f}')
-		train_acc.append(100*correct/processed)
+        pred = y_pred.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+        correct += pred.eq(target.view_as(pred)).sum().item()
+        processed += len(data)
+
+        pbar.set_description(desc= f'Loss={loss.item()} Batch_id={batch_idx} Accuracy={100*correct/processed:0.2f}')
+        train_acc.append(100*correct/processed)
+    return train_losses, train_acc
 
 def test(model, device, test_loader):
+    test_losses = []
+    test_acc = []
+
     model.eval()
     test_loss = 0
     correct = 0
@@ -166,3 +173,4 @@ def test(model, device, test_loader):
         100. * correct / len(test_loader.dataset)))
 
     test_acc.append(100. * correct / len(test_loader.dataset))
+    return test_losses, test_acc
