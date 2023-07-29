@@ -5,7 +5,28 @@ In this assignment, we are using a ResNet18 model to classify the CIFAR 10 datas
 We will be using OneCycleLR to find the best LR and use GradCam to display the misclassified images.
 
 ## Model Architecture
-We are using Standard ResNet18 model.
+We are using the Standard ResNet18 model.
+
+## Package details
+We create a package consisting of the below files:
+
+### Models folder
+It contains the model.py file. This file contains code for ResNet18.
+
+### Main.py
+This contains the main package file which will be called in the jupyter notebook.
+It contains the below:
+  - training and test loops
+  - data split between test and train
+  - epochs
+  - batch size
+  - optimizer
+
+### Utils.py
+This contains all the other utility functions like:
+  - image transforms using albumentations
+  - GradCam
+  - Code to view misclassification images with labels
 
 ### OneCycle LR
 ![Alt text](OneCycleLR.png)
