@@ -13,14 +13,14 @@ We are using the Standard ResNet18 model.
 ### Training Loss
 ![Alt text](train_loss.jpg)
 
-### Training Accuracy
-![Alt text](test_acc.jpg)
+### Validation Accuracy
+![Alt text](val_acc.jpg)
 
-### Training Accuracy
-![Alt text](test_acc.jpg)
+### Validation Accuracy
+![Alt text](val_acc.jpg)
 
 ### 10 Misclassified Images
-![Alt text](./misclassified_images/Misclassified.png)
+![Alt text](Misclassified.png)
 
 # HuggingFace Spaces link
 The app is deployed on HuggingFace Spaces at the below link:
