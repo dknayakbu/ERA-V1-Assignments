@@ -20,7 +20,7 @@ We are using the Standard ResNet18 model.
 ![Alt text](val_acc.jpg)
 
 ### 10 Misclassified Images
-![Alt text](Misclassified.png)
+![Alt text](Misclassified.jpg)
 
 # HuggingFace Spaces link
 The app is deployed on HuggingFace Spaces at the below link:
