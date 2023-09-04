@@ -7,7 +7,7 @@ Created on Fri Sep  3 12:33:34 2023
 """
 
 from model import build_transformer
-from S15.dataset import BilingualDataset, causal_mask
+from dataset import BilingualDataset, causal_mask
 from config import get_config, get_weights_file_path
 
 # import torchtext.datasets as datasets
