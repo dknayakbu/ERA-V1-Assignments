@@ -8,7 +8,7 @@ Created on Fri Sep  1 12:45:12 2023
 #import lightning.pytorch as pl
 import torch
 from torch.utils.data import DataLoader, random_split, Dataset
-from datasets import load_dataset
+from dataset import load_dataset
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
