@@ -7,7 +7,7 @@ Created on Fri Sep  3 12:33:34 2023
 """
 
 from model import build_transformer
-from datasets import BilingualDataset, causal_mask
+from S15.dataset import BilingualDataset, causal_mask
 from config import get_config, get_weights_file_path
 
 import torchtext.datasets as datasets
@@ -22,7 +22,7 @@ import os
 from pathlib import Path
 
 # Huggingface datasets and tokenizers
-from datasets import load_dataset, load_from_disk
+from S15.dataset import load_dataset, load_from_disk
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
