@@ -19,7 +19,7 @@ import os
 from tqdm import tqdm
 from pathlib import Path
 
-from datasets import load_dataset
+from torchtext.datasets import load_dataset
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
