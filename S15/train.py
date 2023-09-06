@@ -19,7 +19,7 @@ import os
 from tqdm import tqdm
 from pathlib import Path
 
-from torchtext.datasets import load_dataset
+from datasets import load_dataset
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
@@ -27,6 +27,8 @@ from tokenizers.pre_tokenizers import Whitespace
 
 import torchmetrics
 from torch.utils.tensorboard.writer import SummaryWriter
+
+
 
 def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_len, device):
     sos_idx = tokenizer_tgt.token_to_id("[SOS]")
@@ -246,7 +248,9 @@ def train_model(config):
             'global_step': global_step
          }, model_filename)
 
-# if __name__ == '__main__':
-#     warnings.filterwarnings("ignore")
-#     config = get_config()
-#     train_model(config)
+if __name__ == '__main__':
+    warnings.filterwarnings("ignore")
+    config = get_config()
+    train_model(config)
+
+
