@@ -5,7 +5,7 @@ Created on Fri Sep  1 12:45:12 2023
 
 @author: Deepak
 """
-#import lightning.pytorch as pl
+
 import torch
 from torch.utils.data import DataLoader, random_split, Dataset
 from datasets import load_dataset
