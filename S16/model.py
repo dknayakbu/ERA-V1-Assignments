@@ -7,7 +7,7 @@ Created on Wed Sep  6 12:45:12 2023
 """
 
 import math
-import lightning as L
+# import lightning as L
 from sympy import Mul
 import torch
 import torch.nn as nn
