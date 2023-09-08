@@ -1,14 +1,14 @@
 # ERA-V1-Assignments for Session 16
 This repository contains all the ERA V1 session 16 Assignments.
 
-In this assignment, we are going to spped up the training process by Training the Transformers Efficiently.
+In this assignment, we will speed up the training process by efficiently training the transformers.
 
-The task at hand is to reach a loss of less than 1.8 on the Englist-French translation dataset.
+The task at hand is to reach a loss of less than 1.8 on the English-French translation dataset.
 
 We will be implementing the below:
 
 ## OneCycle Policy
-The One Cycle Policy is a technique used in deep learning to train complex models faster and with fewer iterations. It follows the Cyclical Learning Rate (CLR) to obtain faster training time with regularization effect but with a slight modification. Specifically, it uses one cycle that is smaller than the total number of iterations/epochs and allows the learning rate to decrease several orders of magnitude less than the initial learning rate for the remaining iterations (i.e. last few iterations)
+The One Cycle Policy is a technique used in deep learning to train complex models faster and with fewer iterations. It follows the Cyclical Learning Rate (CLR) to obtain faster training time with a regularization effect but with a slight modification. Specifically, it uses one cycle that is smaller than the total number of iterations/epochs and allows the learning rate to decrease several orders of magnitude less than the initial learning rate for the remaining iterations (i.e. last few iterations)
 
 
 ## Dynamic Padding
@@ -16,7 +16,7 @@ Dynamic padding is a technique used in natural language processing to optimize t
 
 
 ## Automatic Mixed Precision
-Automatic Mixed Precision (AMP) is a technique used in deep learning to speed up training and reduce memory usage by combining different numerical formats in one computational workload. AMP is supported by popular deep learning frameworks such as TensorFlow, PyTorch, and MXNet. In the context of Transformers, AMP is used to train models faster by training data in half-precision floating point (FP16) compared to single-precision floating point (FP32). AMP is similar to FP16 mixed precision, but it uses both single and half-precision representations. AMP automates mixed precision by using a combination of automatic casting and scaling of gradients
+Automatic Mixed Precision (AMP) is a technique used in deep learning to speed up training and reduce memory usage by combining different numerical formats in one computational workload. AMP is supported by popular deep learning frameworks such as TensorFlow, PyTorch, and MXNet. In the context of Transformers, AMP is used to train models faster by training data in a half-precision floating point (FP16) compared to a single-precision floating point (FP32). AMP is similar to FP16 mixed precision, but it uses both single and half-precision representations. AMP automates mixed precision by using a combination of automatic casting and scaling of gradients
 
 
 ## Parameter Sharing
