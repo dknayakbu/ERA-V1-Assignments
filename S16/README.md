@@ -26,6 +26,7 @@ Parameter sharing is a technique used in Transformers to reduce the number of pa
     - Using sequence, cycle, or cycle (rev) strategies to perform weight sharing on Transformer models
 
 # Training Results and Log
+```
 Using device: cuda
 Max length of source sentence: 471
 Max length of target sentence: 482
@@ -238,6 +239,6 @@ To disable this warning, you can either:
  PREDICTED: In this room , and quite as to fond , a single peine upon one table , off his so .
 --------------------------------------------------------------------------------
 Processing Epoch 13: 100%|████████████████████████████████████████████████████████████| 1929/1929 [02:06<00:00, 15.29it/s, loss=1.789]
-
+```
 
 
