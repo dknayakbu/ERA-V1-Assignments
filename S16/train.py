@@ -261,7 +261,7 @@ def train_model(config):
         print('preloaded')
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=config['MAX_LR'], steps_per_epoch=len(train_dataloader), epochs=config['num_epochs'],
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=config['max_lr'], steps_per_epoch=len(train_dataloader), epochs=config['num_epochs'],
                                                     pct_start=int(0.3*config['num_epochs'])/config['num_epochs'] if config['num_epochs']!=1 else 0.5,
                                                     div_factor=100, three_phase=False, final_div_factor=100, anneal_strategy='linear')
 
