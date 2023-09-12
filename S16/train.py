@@ -260,10 +260,21 @@ def train_model(config):
         global_step = state['global_step']
         print('preloaded')
 
+    MAX_LR = config["max_lr"]
+    STEPS_PER_EPOCH = len(train_dataloader)
+    EPOCHS = config["num_epochs"]
+
     loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=config['max_lr'], steps_per_epoch=len(train_dataloader), epochs=config['num_epochs'],
-                                                    pct_start=int(0.3*config['num_epochs'])/config['num_epochs'] if config['num_epochs']!=1 else 0.5,
-                                                    div_factor=100, three_phase=False, final_div_factor=100, anneal_strategy='linear')
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
+                                                    max_lr=MAX_LR,
+                                                    steps_per_epoch=STEPS_PER_EPOCH, 
+                                                    epochs=EPOCHS,
+                                                    # pct_start=int(0.3*config['num_epochs'])/config['num_epochs'] if config['num_epochs']!=1 else 0.5,
+                                                    pct_start=1/10 if EPOCHS != 1 else 0.5,
+                                                    div_factor=10, 
+                                                    three_phase=True, 
+                                                    final_div_factor=10, 
+                                                    anneal_strategy='linear')
 
     for epoch in range(initial_epoch, config['num_epochs']):
         torch.cuda.empty_cache()

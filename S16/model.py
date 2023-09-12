@@ -270,7 +270,7 @@ class Transformer(nn.Module):
         return self.projection_layer(x)
     
 def build_transformer(src_vocab_size: int, tgt_vocab_size: int, src_seq_len: int, tgt_seq_len: int, d_model: int=512, 
-                      N: int=6, h: int=8, dropout: float=0.1, d_ff: int=2048) -> Transformer:
+                      N: int=6, h: int=8, dropout: float=0.1, d_ff: int=128) -> Transformer:
 
     print("Building transformer... ")
     print("InputEmbeddings")
@@ -283,7 +283,7 @@ def build_transformer(src_vocab_size: int, tgt_vocab_size: int, src_seq_len: int
 
     print("building encoder_blocks")
     encoder_blocks = []
-    for _ in range(N):
+    for _ in range(N//2):
         encoder_self_attention_block = MultiHeadAttentionBlock(d_model,h,dropout)
         feed_forward_block = FeedForwardNetwork(d_model, d_ff, dropout)
         encoder_block = EncoderBlock(encoder_self_attention_block, feed_forward_block, dropout)
@@ -291,16 +291,23 @@ def build_transformer(src_vocab_size: int, tgt_vocab_size: int, src_seq_len: int
 
     print("building decoder_blocks")
     decoder_blocks = []
-    for _ in range(N):
+    for _ in range(N//2):
         decoder_self_attention_block = MultiHeadAttentionBlock(d_model,h,dropout)
         decoder_cross_attention_block = MultiHeadAttentionBlock(d_model,h,dropout)
         feed_forward_block = FeedForwardNetwork(d_model, d_ff, dropout)
         decoder_block = DecoderBlock(decoder_self_attention_block, decoder_cross_attention_block, feed_forward_block, dropout)
         decoder_blocks.append(decoder_block)
 
+    # Implement Parameter Sharing Concept
+    e1, e2, e3 = encoder_blocks
+    d1, d2, d3 = decoder_blocks
+
+    encoder_blocks1 = [e1, e2, e3, e3, e2, e1]
+    decoder_blocks1 = [d1, d2, d3, d3, d2, d1]
+
     print("Build Encoder and Decoder")
-    encoder = Encoder(nn.ModuleList(encoder_blocks))
-    decoder = Decoder(nn.ModuleList(decoder_blocks))
+    encoder = Encoder(nn.ModuleList(encoder_blocks1))
+    decoder = Decoder(nn.ModuleList(decoder_blocks1))
 
     print("Build projection_layer")
     projection_layer = ProjectionLayer(d_model, tgt_vocab_size)
