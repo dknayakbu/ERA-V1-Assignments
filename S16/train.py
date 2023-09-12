@@ -5,7 +5,6 @@ Created on Wed Sep  6 12:45:12 2023
 
 @author: Deepak
 """
-
 import warnings
 from model import build_transformer
 from dataset import BiLingualDataset, causal_mask
@@ -28,6 +27,7 @@ from tokenizers.pre_tokenizers import Whitespace
 
 import torchmetrics
 from torch.utils.tensorboard.writer import SummaryWriter
+from torchsummary import summary
 
 
 
@@ -194,10 +194,41 @@ def get_ds(config):
     print(f'Max length of source sentence: {max_len_src}')
     print(f'Max length of target sentence: {max_len_tgt}')
 
-    train_dataloader = DataLoader(train_ds, batch_size = config['batch_size'],shuffle=True,num_workers = 16)
+    train_dataloader = DataLoader(train_ds, batch_size = config['batch_size'],shuffle=True,num_workers = 16, collate_fn=collate_fn_dynamic_padding)
     val_dataloader = DataLoader(val_ds, batch_size = 1,shuffle=True,num_workers = 16)
 
     return train_dataloader,val_dataloader, tokenizer_src, tokenizer_tgt
+
+def collate_fn_dynamic_padding(batch):
+    encoder_input_max = max(x["encoder_str_length"] for x in batch)
+    decoder_input_max = max(x["decoder_str_length"] for x in batch)
+
+    encoder_inputs = []
+    decoder_inputs = []
+    encoder_mask = []
+    decoder_mask = []
+    label = []
+    src_text = []
+    tgt_text = []
+
+    for b in batch:
+        encoder_inputs.append(b["encoder_input"][:encoder_input_max])
+        decoder_inputs.append(b["decoder_input"][:decoder_input_max])
+        encoder_mask.append(b["encoder_mask"][0, 0, :encoder_input_max].unsqueeze(0).unsqueeze(0).unsqueeze(0))
+        decoder_mask.append(b["decoder_mask"][0, :decoder_input_max, :decoder_input_max].unsqueeze(0).unsqueeze(0))
+        label.append(b["label"][:decoder_input_max])
+        src_text.append(b["src_text"])
+        tgt_text.append(b["tgt_text"])
+
+    return {
+        "encoder_input": torch.vstack(encoder_inputs),
+        "decoder_input": torch.vstack(decoder_inputs),
+        "encoder_mask": torch.vstack(encoder_mask),
+        "decoder_mask": torch.vstack(decoder_mask),
+        "label": torch.vstack(label),
+        "src_text": src_text,
+        "tgt_text": tgt_text
+    }
 
 def train_model(config):
 
@@ -210,27 +241,15 @@ def train_model(config):
 
     model = get_model(config, tokenizer_src.get_vocab_size(), tokenizer_tgt.get_vocab_size()).to(device)
 
+    scaler = torch.cuda.amp.grad_scaler.GradScaler()
+    lr = [0.0]
+
     writer = SummaryWriter(config['experiment_name'])
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], eps=1e-9)
+    optimizer = torch.optim.Adam(model.parameters(), lr = config['lr'], eps = 1e-6)
 
-    MAX_LR = config['lr']
-    STEPS_PER_EPOCH = len(train_dataloader)
-    EPOCHS = config['num_epochs']
-
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
-                                                    max_lr = MAX_LR,
-                                                    steps_per_epoch = STEPS_PER_EPOCH,
-                                                    epochs = EPOCHS,
-                                                    pct_start = 1/10 if EPOCHS != 1 else 0.5,
-                                                    div_factor = 10,
-                                                    three_phase = True,
-                                                    final_div_factor = 10,
-                                                    anneal_strategy = 'linear'
-                                                    )
-
-    # If the user specified a model to preload before training, load it
     initial_epoch = 0
     global_step = 0
+
     if config['preload']:
         model_filename = get_weights_file_path(config, config['preload'])
         print(f'Preloading model {model_filename}')
@@ -239,82 +258,57 @@ def train_model(config):
         initial_epoch = state['epoch'] + 1
         optimizer.load_state_dict(state['optimizer_state_dict'])
         global_step = state['global_step']
-        print('Preloaded')
+        print('preloaded')
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1)
-
-    scaler = torch.cuda.amp.GradScaler()
-    lr = [0.0]
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=config['MAX_LR'], steps_per_epoch=len(train_dataloader), epochs=config['num_epochs'],
+                                                    pct_start=int(0.3*config['num_epochs'])/config['num_epochs'] if config['num_epochs']!=1 else 0.5,
+                                                    div_factor=100, three_phase=False, final_div_factor=100, anneal_strategy='linear')
 
     for epoch in range(initial_epoch, config['num_epochs']):
         torch.cuda.empty_cache()
         model.train()
-        batch_iterator = tqdm(train_dataloader, desc=f'Processing Epoch {epoch:02d}')
-        avg_loss_agg = []
+        batch_iterator = tqdm(train_dataloader, desc =f"Processing Epoch {epoch:02d}")
+
         for batch in batch_iterator:
-            optimizer.zero_grad(set_to_none=True)
 
-            encoder_input = batch['encoder_input'].to(device)  # (b, seq_len)
-            decoder_input = batch['decoder_input'].to(device)  # (B, seq_len)
-            encoder_mask = batch['encoder_mask'].to(device)  # (B, 1, 1, seq_len)
-            decoder_mask = batch['decoder_mask'].to(device)  # (B, 1, seq_len, seq_len)
+          encoder_input = batch['encoder_input'].to(device) # (b, seq_len)
+          decoder_input = batch['decoder_input'].to(device) # (B, seq_len)
+          encoder_mask  = batch['encoder_mask'].to(device)  # (B, 1, 1, seq_len)
+          decoder_mask  = batch['decoder_mask'].to(device)  # (B, 1, seq_len, seq_len)
 
-            with torch.autocast(device_type='cuda', dtype=torch.float16):
-                # Run the tensors through the encoder, decoder and the projection layer
-                encoder_output = model.encode(
-                    encoder_input, encoder_mask
-                )  # (B, seq_len, d_model)
-                decoder_output = model.decode(
-                    encoder_output, encoder_mask, decoder_input, decoder_mask
-                )  #
-                proj_output = model.project(decoder_output)
+          #Run tensors thru encoder, decoder  and projection layer
+          with torch.autocast(device_type="cuda", dtype=torch.float16):
+            encoder_output = model.encode(encoder_input, encoder_mask)
+            decoder_output = model.decode(encoder_output, encoder_mask,decoder_input, decoder_mask)
+            proj_output = model.project(decoder_output)
 
-                # Compare the output with the label
-                label = batch['label'].to(device)  # (B, seq_len)
+            label = batch['label'].to(device)
 
-                # Compute the loss using a simple cross entropy
-                loss = loss_fn(
-                    proj_output.view(-1, tokenizer_tgt.get_vocab_size()), label.view(-1)
-                )
-                avg_loss_agg.append(loss.item())
-            batch_iterator.set_postfix({'loss': f'{loss.item():6.3f}'})
+            loss = loss_fn(proj_output.view(-1, tokenizer_tgt.get_vocab_size()), label.view(-1))
 
-            # Log the the loss
-            writer.add_scalar('train_loss', loss.item(), global_step)
-            writer.flush()
+          batch_iterator.set_postfix({"loss": f"{loss.item():6.3f}"})
 
-            # Backpropagate the loss
-            scaler.scale(loss).backward()
+          writer.add_scalar('train loss',loss.item(), global_step)
+          writer.flush()
 
-            scale = scaler.get_scale()
+          #loss.backward()
+          scaler.scale(loss).backward()
 
-            # Update the weights
-            scaler.step(optimizer)
-            scaler.update()
-            skip_lr_sched = (scale > scaler.get_scale())
-            if not skip_lr_sched:
-                scheduler.step()
-            lr.append(scheduler.get_last_lr())
-              
-            global_step += 1
-            
-        writer.add_scalar("avg_train_loss", sum(avg_loss_agg)/len(avg_loss_agg), epoch)
-        writer.flush()
-        print(f"Average loss of epoch {epoch} is {sum(avg_loss_agg)/len(avg_loss_agg)}")
+          #optimizer.step()
+          scale = scaler.get_scale()
+          scaler.step(optimizer)
+          scaler.update()
+          skip_lr_scheduler = (scale > scaler.get_scale())
+          if not skip_lr_scheduler:
+              scheduler.step()
+          lr.append(scheduler.get_last_lr())
+          optimizer.zero_grad(set_to_none=True)
 
+          global_step += 1
 
-        # Run Validation at the end of every epoch
-        run_validation(
-            model,
-            val_dataloader,
-            tokenizer_src,
-            tokenizer_tgt,
-            config["seq_len"],
-            device,
-            lambda msg: batch_iterator.write(msg),
-            global_step,
-            writer,
-        )
+        run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device,lambda msg: batch_iterator.write(msg),   global_step, writer)
+
         model_filename = get_weights_file_path(config, f"{epoch:02d}")
         torch.save({
             'epoch': epoch,
@@ -327,6 +321,5 @@ if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     config = get_config()
     train_model(config)
-
 
 
