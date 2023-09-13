@@ -260,7 +260,7 @@ def train_model(config):
         global_step = state['global_step']
         print('preloaded')
 
-    MAX_LR = config["max_lr"]
+    MAX_LR = config["lr"]
     STEPS_PER_EPOCH = len(train_dataloader)
     EPOCHS = config["num_epochs"]
 
