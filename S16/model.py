@@ -122,7 +122,7 @@ class MultiHeadAttentionBlock(nn.Module):
         d_k = query.shape[-1]
         # Applying formula from paper: (batch, h, seq_len, d_k) --> (batch, h, seq_len, seq_len)
         attention_scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
-        _MASKING_VALUE = -1e+30 if attention_scores.dtype == torch.float32 else -1e+4 
+        _MASKING_VALUE = -1e+9 if attention_scores.dtype == torch.float32 else -1e+4 
         if mask is not None:
             # A very low value (-inf) to the positions where mask == 0
             attention_scores = attention_scores.masked_fill_(mask == 0, _MASKING_VALUE)
@@ -142,15 +142,15 @@ class MultiHeadAttentionBlock(nn.Module):
         key = self.w_k(k)   # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
         value = self.w_v(v)  # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
 
-        # (batch, seq_len, d_model) --> (batch, seq_len, h, d_k) --> (batch, h, seq_len, d_k)
-        query = query.view(query.shape[0], query.shape[1], self.h, self.d_k).permute(0, 2, 1, 3)
-        key = key.view(key.shape[0], key.shape[1], self.h, self.d_k).permute(0, 2, 1, 3)
-        value = value.view(value.shape[0], value.shape[1], self.h, self.d_k).permute(0, 2, 1, 3)
-
         # # (batch, seq_len, d_model) --> (batch, seq_len, h, d_k) --> (batch, h, seq_len, d_k)
-        # query = query.view(query.shape[0], query.shape[1], self.h, self.d_k).transpose(1, 2)
-        # key = key.view(key.shape[0], key.shape[1], self.h, self.d_k).transpose(1, 2)
-        # value = value.view(value.shape[0], value.shape[1], self.h, self.d_k).transpose(1, 2)
+        # query = query.view(query.shape[0], query.shape[1], self.h, self.d_k).permute(0, 2, 1, 3)
+        # key = key.view(key.shape[0], key.shape[1], self.h, self.d_k).permute(0, 2, 1, 3)
+        # value = value.view(value.shape[0], value.shape[1], self.h, self.d_k).permute(0, 2, 1, 3)
+
+        # (batch, seq_len, d_model) --> (batch, seq_len, h, d_k) --> (batch, h, seq_len, d_k)
+        query = query.view(query.shape[0], query.shape[1], self.h, self.d_k).transpose(1, 2)
+        key = key.view(key.shape[0], key.shape[1], self.h, self.d_k).transpose(1, 2)
+        value = value.view(value.shape[0], value.shape[1], self.h, self.d_k).transpose(1, 2)
 
         # Calculate attention
         x, self.attention_scores = MultiHeadAttentionBlock.attention(query, key, value, mask, self.dropout)
